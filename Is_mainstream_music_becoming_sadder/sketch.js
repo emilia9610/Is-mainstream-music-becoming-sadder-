@@ -6,7 +6,15 @@ function setup() {
 
 function draw() {
   background(245, 240, 230); // soft cream background
+  drawTitle();
   drawA4Paper();
+}
+
+function drawTitle(){
+  fill(0);
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text("is mainstream music becoming sadder?", width / 2, 60);
 }
 
 function drawA4Paper() {
