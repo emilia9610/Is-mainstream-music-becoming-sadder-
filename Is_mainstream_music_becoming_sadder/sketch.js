@@ -71,16 +71,16 @@ function drawA4Paper() {
 
 
 function drawStaves(x, y, paperW, paperH) {
-  const topMargin = 120;
-  const bottomMargin = 80;
-  const staveAreaHeight = paperH - topMargin - bottomMargin;
+  let topMargin = 120;
+  let bottomMargin = 80;
+  let staveAreaHeight = paperH - topMargin - bottomMargin;
 
-  const numStaves = 8;
+  let numStaves = 8;
   const staveSpacing = staveAreaHeight / numStaves;
 
-  const lineSpacing = 5;     // space between the 5 lines of each stave
-  const lineLength = paperW * 0.85;
-  const lineX = x + (paperW - lineLength) / 2;
+  let lineSpacing = 5;     // space between the 5 lines of each stave
+  let lineLength = paperW * 0.85;
+  let lineX = x + (paperW - lineLength) / 2;
 
   stroke(0);
   strokeWeight(1);
