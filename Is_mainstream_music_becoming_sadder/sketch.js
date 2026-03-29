@@ -14,8 +14,11 @@ function draw() {
 }
 
 function drawTitle(){
+  noStroke();
   fill(0);
-  textSize(32);
+  textFont("Georgia, serif");
+  textSize(28);
+  textStyle(ITALIC);
   textAlign(CENTER, CENTER);
   text("is mainstream music becoming sadder?", width / 2, 40);
 }
