@@ -10,3 +10,6 @@ https://www.w3schools.com/js/js_loop_for.asp
 
 prototype dataset:
 https://www.kaggle.com/datasets/leonardopena/top-spotify-songs-from-20102019-by-year
+
+font:
+https://developers.google.com/fonts/docs/css2
