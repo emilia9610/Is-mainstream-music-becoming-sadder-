@@ -28,17 +28,25 @@
         </style>
     </head>
     <body>
-        <div class="page" >
-        <div class="staff-block">
-            <svg class="staff" viewBox="0 0 512 36" fill="none" xlm="http://www.w3.org/2000/svg">
-                <line x1="0" y1="4" x2="512" y2="4" stroke="#c0c0bc" stroke-width="0.8"></line>
-                <line x1="0" y1="12" x2="512" y2="12" stroke="#c0c0bc" stroke-width="0.8"></line>
-                <line x1="0" y1="20" x2="512" y2="20" stroke="#c0c0bc" stroke-width="0.8"></line>
-                <line x1="0" y1="28" x2="512" y2="28" stroke="#c0c0bc" stroke-width="0.8"></line>
-                <line x1="0" y1="36" x2="512" y2="36" stroke="#c0c0bc" stroke-width="0.8"></line>
+<div class="page" id="page"></div>
 
+    <script>
+      const page = document.getElementById('page');
+      const totalStaves = 8;
+
+      for (let i = 0; i < totalStaves; i++) {
+        page.innerHTML += `
+          <div class="staff-block">
+            <svg class="staff" viewBox="0 0 512 36" fill="none" xlm="http://www.w3.org/2000/svg">
+              <line x1="0" y1="4"  x2="512" y2="4"  stroke="#c0c0bc" stroke-width="0.8"/>
+              <line x1="0" y1="12" x2="512" y2="12" stroke="#c0c0bc" stroke-width="0.8"/>
+              <line x1="0" y1="20" x2="512" y2="20" stroke="#c0c0bc" stroke-width="0.8"/>
+              <line x1="0" y1="28" x2="512" y2="28" stroke="#c0c0bc" stroke-width="0.8"/>
+              <line x1="0" y1="36" x2="512" y2="36" stroke="#c0c0bc" stroke-width="0.8"/>
             </svg>
-        </div>
-    </div>
-    </body>
+          </div>`;
+      }
+    </script>
+
+  </body>
 </html>
