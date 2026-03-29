@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <style>
+        /*background of the website*/
+        body {
+            background: white;
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+            min-height: 100vh;
+        }
+
+        .page {
+            background: white;
+            width: 640px;
+            padding: 72px 64px;
+        }
+        /*each row of music lines*/
+        .staff-block {
+            margin-bottom: 52px;
+        }
+        /*actual lines drawn inside each row*/
+        svg.staff {
+            width: 100%;
+            display: block;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="staff-block">
+            <svg class="staff" viewBox="0 0 512 36" fill="none" xlm="http://www.w3.org/2000/svg">
+                <line x1="0" y1="4" x2="512" y2="4" stroke="#c0c0bc" stroke-width="0.8"> </line>
+
+            </svg>
+        </div>
+    </body>
+</html>
