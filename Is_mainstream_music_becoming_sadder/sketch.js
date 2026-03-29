@@ -1,3 +1,8 @@
+let dataset;
+
+function preload(){
+dataset = loadTable("top10s2.csv", "header");}
+
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
   canvas.parent(document.querySelector("main"));
@@ -53,7 +58,15 @@ function drawA4Paper() {
   rect(x, y, paperW, paperH, 6);
 
   // stave lines
+  drawingContext.shadowOffsetX = 0;
+  drawingContext.shadowOffsetY = 0;
+  drawingContext.shadowBlur    = 0;
+  drawingContext.shadowColor   = "rgba(0, 0, 0, 0)";
+
+
   drawStaves(x, y, paperW, paperH);
+  drawDots(x, y, paperW, paperH);
+
 }
 
 
@@ -80,4 +93,27 @@ function drawStaves(x, y, paperW, paperH) {
       line(lineX, yPos, lineX + lineLength, yPos);
     }
   }
+}
+function drawDots (x,y, paperW, paperH){
+  let topMargin = 120;
+  let lineSpacing = 5;
+  let lineLength = paperW * 0.85;
+  let lineX = x + (paperW - lineLength) / 2;
+
+  // valence score from the first row of the CSV aka test
+  let val = dataset.getNum(0, "val");
+
+  // top and bottom of the first stave's 5 lines
+  // y-position of the top stave line
+  let staveTop = y + topMargin;
+  // bottom stave line (4 gaps = 5 lines)
+  let staveBot = staveTop + 4 * lineSpacing; 
+
+  let dotX = lineX + lineLength * 0.5;
+  // place the dot horizontally in the centre of the stave
+  let dotY = map(val, 0, 100, staveBot, staveTop);
+
+  noStroke();
+  fill(0);
+  circle(dotX, dotY, 6);
 }
