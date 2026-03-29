@@ -41,6 +41,12 @@ function drawA4Paper() {
   const x = (width - paperW) / 2;
   const y = (height - paperH) / 2;
 
+  //shadow around the paper
+  drawingContext.shadowOffsetX = 4;
+  drawingContext.shadowOffsetY = 4;
+  drawingContext.shadowBlur    = 25;
+  drawingContext.shadowColor = "rgba(0, 0, 0, 0.25)";
+
   // draw the paper
   fill(255);
   noStroke();
