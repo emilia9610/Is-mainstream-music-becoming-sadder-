@@ -1,6 +1,6 @@
 let dataset;
 
-function preload(){
+function preload() {
 dataset = loadTable("top10s2.csv", "header");}
 
 function setup() {
@@ -8,17 +8,19 @@ function setup() {
   canvas.parent(document.querySelector("main"));
   noLoop();
 }
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   redraw();
 }
+
 function draw() {
   background(245, 240, 230); // soft cream background
   drawTitle();
   drawA4Paper();
 }
 
-function drawTitle(){
+function drawTitle() {
   noStroke();
   fill(0);
   textFont("Georgia, serif");
@@ -29,7 +31,7 @@ function drawTitle(){
 }
 
 function drawA4Paper() {
-  const a4Ratio = 1.4142; // height = width * ratio
+  let a4Ratio = 1.4142; // height = width * ratio
 
   // paper width based on screen size
   let paperW = width * 0.6;
@@ -43,40 +45,37 @@ function drawA4Paper() {
   }
 
   // center the paper
-  const x = (width - paperW) / 2;
-  const y = (height - paperH) / 2;
+  let x = (width - paperW) / 2;
+  let y = (height - paperH) / 2;
 
-  //shadow around the paper
+  // shadow around the paper
   drawingContext.shadowOffsetX = 4;
   drawingContext.shadowOffsetY = 4;
   drawingContext.shadowBlur    = 25;
-  drawingContext.shadowColor = "rgba(0, 0, 0, 0.25)";
+  drawingContext.shadowColor   = "rgba(0, 0, 0, 0.25)";
 
   // draw the paper
   fill(255);
   noStroke();
   rect(x, y, paperW, paperH, 6);
 
-  // stave lines
+  // reset shadow for the content
   drawingContext.shadowOffsetX = 0;
   drawingContext.shadowOffsetY = 0;
   drawingContext.shadowBlur    = 0;
   drawingContext.shadowColor   = "rgba(0, 0, 0, 0)";
 
-
   drawStaves(x, y, paperW, paperH);
   drawDots(x, y, paperW, paperH);
-
 }
-
 
 function drawStaves(x, y, paperW, paperH) {
   let topMargin = 120;
   let bottomMargin = 80;
   let staveAreaHeight = paperH - topMargin - bottomMargin;
 
-  let numStaves = 8;
-  const staveSpacing = staveAreaHeight / numStaves;
+  let numStaves = 10; // one per year (2010-2019)
+  let staveSpacing = staveAreaHeight / numStaves;
 
   let lineSpacing = 5;     // space between the 5 lines of each stave
   let lineLength = paperW * 0.85;
@@ -94,26 +93,78 @@ function drawStaves(x, y, paperW, paperH) {
     }
   }
 }
-function drawDots (x,y, paperW, paperH){
+
+// (2010-2019) with up to 10 valence values each
+function buildYearSongs() {
+  let years = [];
+  for (let yr = 2010; yr <= 2019; yr++) {
+    let entry = { year: yr, songs: [] };
+    years.push(entry);
+  }
+
+  // rows in the loaded CSV
+  let rows = dataset.getRowCount();
+  for (let r = 0; r < rows; r++) {
+    let rowYear = dataset.getNum(r, "year");
+    let val = dataset.getNum(r, "val");
+
+    // search the years for the matching year using yearIndex
+    for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
+      if (years[yearIndex].year === rowYear) {
+        // 10 songs per year
+        if (years[yearIndex].songs.length < 10) {
+          years[yearIndex].songs.push(val);
+        }
+        break; // stop searching once found
+      }
+    }
+  }
+
+  return years;
+}
+
+function drawDots(x, y, paperW, paperH) {
+  // per-year from the loaded CSV
+  let yearData = buildYearSongs();
+
   let topMargin = 120;
+  let bottomMargin = 80;
+  let staveAreaHeight = paperH - topMargin - bottomMargin;
+
+  let numStaves = 10;
+  let staveSpacing = staveAreaHeight / numStaves;
+
   let lineSpacing = 5;
   let lineLength = paperW * 0.85;
   let lineX = x + (paperW - lineLength) / 2;
 
-  // valence score from the first row of the CSV aka test
-  let val = dataset.getNum(0, "val");
+  for (let i = 0; i < yearData.length; i++) {
+    let year = yearData[i].year;
+    let songs = yearData[i].songs;
 
-  // top and bottom of the first stave's 5 lines
-  // y-position of the top stave line
-  let staveTop = y + topMargin;
-  // bottom stave line (4 gaps = 5 lines)
-  let staveBot = staveTop + 4 * lineSpacing; 
+    let staveTop = y + topMargin + i * staveSpacing;
+    let staveBot = staveTop + 4 * lineSpacing;
 
-  let dotX = lineX + lineLength * 0.5;
-  // place the dot horizontally in the centre of the stave
-  let dotY = map(val, 0, 100, staveBot, staveTop);
+    // iterate songs using songIndex and center segment position
+    for (let songIndex = 0; songIndex < songs.length; songIndex++) {
+      // center each dot across the stave
+      let segmentCenter = (songIndex + 0.5) / songs.length;
+      let dotX = lineX + lineLength * segmentCenter;
 
-  noStroke();
-  fill(0);
-  circle(dotX, dotY, 6);
+      // map valence 0–100 to vertical position between bottom and top stave lines
+      let dotY = map(songs[songIndex], 0, 100, staveBot, staveTop);
+
+      noStroke();
+      fill(0);
+      circle(dotX, dotY, 6);
+    }
+
+    // year
+    textFont("Georgia, serif");
+    textSize(7);
+    textStyle(NORMAL);
+    textAlign(RIGHT, CENTER);
+    fill(0);
+    text(year, lineX - 6, staveTop + 2 * lineSpacing);
+  }
 }
