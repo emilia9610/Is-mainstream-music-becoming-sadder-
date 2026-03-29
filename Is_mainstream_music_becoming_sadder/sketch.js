@@ -3,7 +3,10 @@ function setup() {
   canvas.parent(document.querySelector("main"));
   noLoop();
 }
-
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  redraw();
+}
 function draw() {
   background(245, 240, 230); // soft cream background
   drawTitle();
@@ -14,7 +17,7 @@ function drawTitle(){
   fill(0);
   textSize(32);
   textAlign(CENTER, CENTER);
-  text("is mainstream music becoming sadder?", width / 2, 60);
+  text("is mainstream music becoming sadder?", width / 2, 40);
 }
 
 function drawA4Paper() {
@@ -25,8 +28,9 @@ function drawA4Paper() {
   let paperH = paperW * a4Ratio;
 
   // if too tall for screen, scale down
-  if (paperH > height * 0.85) {
-    paperH = height * 0.85;
+  // limit height so the paper does not cover the title
+  if (paperH > height * 0.8) {
+    paperH = height * 0.8;
     paperW = paperH / a4Ratio;
   }
 
