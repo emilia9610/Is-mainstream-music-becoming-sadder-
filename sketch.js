@@ -89,17 +89,17 @@ function drawLegend(x, y, paperW) {
 
   // green upturned symbol
   fill(60, 140, 80);
-  text("▲ score > 50 (happier song)", lineX, y + 78);
+  text("▲ score > 50 (happier song)", lineX, y + 60);
 
   // red downturned symbol
   fill(180, 50, 50);
-  text("▼ score < 50 (sadder song)", lineX + 160, y + 78);
+  text("▼ score < 50 (sadder song)", lineX + 160, y + 60);
 
   // brief note about the formula
   fill(140);
   textSize(7.5);
   textStyle(ITALIC);
-  text("score based on Russell's Circumplex Model (1980)·higher on stave = happier", lineX, y + 92);
+  text("score based on Russell's Circumplex Model (1980)·higher on stave = happier", lineX, y + 80);
   textStyle(NORMAL);
 }
 
