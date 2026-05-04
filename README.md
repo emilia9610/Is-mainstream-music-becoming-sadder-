@@ -5,10 +5,12 @@ github repository:
 https://github.com/emilia9610/Is-mainstream-music-becoming-sadder- 
 
 PROJECT SUMMARY
+
 "Is Mainstream Music Becoming Sadder"
 This project explores and analyses patterns in emotions within mainstream music from the 1960s to present day, in order to denote whether or not music has progessivelt become more negative.
 
 GROUP DESCRIPTION
+
 Amina - Copywriting, Design 
 Emilia - Coding, Dataset
 
