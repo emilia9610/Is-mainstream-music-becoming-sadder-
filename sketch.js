@@ -365,6 +365,74 @@ function drawA4Paper() {
   drawingContext.shadowBlur    = 0;
   drawingContext.shadowColor   = "rgba(0, 0, 0, 0)";
 
+ // shadow for both boxes
+ // matches the paper shadow
+drawingContext.shadowOffsetX = 4;
+drawingContext.shadowOffsetY = 4;
+drawingContext.shadowBlur    = 15;
+drawingContext.shadowColor   = "rgba(0, 0, 0, 0.15)";
+
+// left box
+fill(255);
+noStroke();
+rect(x - 215, y + 10, 200, 210, 8);
+
+// right box
+rect(x + paperW + 15, y + 10, 200, 230, 8);
+
+// reset shadow
+drawingContext.shadowOffsetX = 0;
+drawingContext.shadowOffsetY = 0;
+drawingContext.shadowBlur    = 0;
+drawingContext.shadowColor   = "rgba(0, 0, 0, 0)";
+
+// left box
+// heading + intro
+noStroke();
+textFont("Georgia, serif");
+textAlign(CENTER, TOP);
+
+fill(20);
+textSize(11);
+textStyle(BOLD);
+text("IS MAINSTREAM MUSIC", x - 115, y + 22);
+text("BECOMING SADDER?", x - 115, y + 38);
+
+textSize(12);
+textStyle(NORMAL);
+fill(60);
+text("Have you noticed the emotional", x - 115, y + 60);
+text("downward spiral mainstream music", x - 115, y + 72);
+text("has been on lately? Me too…", x - 115, y + 84);
+text("Sounds of melancholy and blue seem", x - 115, y + 100);
+text("to be topping the charts,", x - 115, y + 112);
+text("but why is that?", x - 115, y + 124);
+text("Perhaps this is a sign of the times…", x - 115, y + 140);
+text("Let's find out!", x - 115, y + 152);
+
+// right box
+// overview
+textAlign(LEFT, TOP);
+let rx = x + paperW + 28;
+
+fill(20);
+textSize(9);
+textStyle(BOLD);
+text("OVERVIEW", rx, y + 22);
+
+textSize(12);
+textStyle(NORMAL);
+fill(60);
+text("Like our own emotions, the emotions", rx, y + 40);
+text("of music seem to fluctuate a lot.", rx, y + 52);
+text("There are noticeable high points,", rx, y + 68);
+text("low points and even dormant periods.", rx, y + 80);
+text("We may be able to officially declare", rx, y + 96);
+text("the 2000s are music's happiest decade.", rx, y + 108);
+text("However just 10 years later things", rx, y + 124);
+text("changed…", rx, y + 136);
+text("But today is slightly more cheerful,", rx, y + 152);
+text("things are looking up!", rx, y + 164);
   drawLegend(x, y, paperW);
   drawStaves(x, y, paperW, paperH);
   drawDots(x, y, paperW, paperH);
