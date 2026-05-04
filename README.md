@@ -12,6 +12,7 @@ This project explores and analyses patterns in emotions within mainstream music 
 GROUP DESCRIPTION
 
 Amina - Copywriting, Design 
+
 Emilia - Coding, Dataset
 
 REFERENCES
