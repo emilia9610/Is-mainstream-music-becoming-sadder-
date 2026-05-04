@@ -11,6 +11,139 @@ let currentPage = "stave";
 let navScatter = { x: 0, y: 0, w: 150, h: 28 };
 let navBack    = { x: 30, y: 30, w: 130, h: 28 };
 
+// side panel state for scatter page
+// opens when a decade title is clicked
+let panelOpen   = false;
+let panelDecade = null;
+let panelX      = null;
+let panelTarget = null;
+let panelW      = 300;
+
+// decade descriptions written by amina
+let decadeDescriptions = {
+  "1960s": {
+    title: "60s — Sunshine With a Few Clouds",
+    lines: [
+      "There is a strong cluster of happy, high",
+      "energy tracks driven by the likes of the",
+      "Beatles and Elvis Presley.",
+      "Rock N Roll takes the cake here!",
+      "",
+      "This could be the post-war optimism",
+      "coming through.",
+      "",
+      "The less dense cluster of mellow tracks",
+      "are still noticeable, led by a more",
+      "soulful and bluesy vibe.",
+      "",
+      "Is this introspection emerging in an",
+      "otherwise happy soundscape?"
+    ]
+  },
+  "1970s": {
+    title: "70s — The Storm After the Calm?",
+    lines: [
+      "Looks like there's a dip in valence…",
+      "but the energy is maintained.",
+      "",
+      "There's anti-war sentiment from John",
+      "Lennon and Creedence Clearwater Revival.",
+      "",
+      "Sad emotions and yearning from the",
+      "love songs of the era pull the mood lower.",
+      "",
+      "However, more genre emergences are",
+      "clear from the wider dispersion of dots."
+    ]
+  },
+  "1980s": {
+    title: "80s — Neon Outfits... and Music Too",
+    lines: [
+      "Both high valence and energy seem",
+      "to dominate here.",
+      "",
+      "Queen were obviously the trailblazers",
+      "of energetic rock anthems.",
+      "",
+      "This is perhaps expected. The 80s is",
+      "known for its commercial flamboyance",
+      "and technological optimism.",
+      "",
+      "Music here seemed to be a highly",
+      "energised and polished form of escapism.",
+      "The 80s is notorious for its many",
+      "economic and social justice issues."
+    ]
+  },
+  "1990s": {
+    title: "90s — Angsty Teen Phase?",
+    lines: [
+      "The clear rise in sad but relatively",
+      "energetic tracks could reflect the 90s",
+      "popular grunge and alternative era.",
+      "",
+      "We also witness hip-hop's mostly happy",
+      "rise to the mainstream through Kriss Kross,",
+      "Will Smith and Coolio.",
+      "",
+      "This is the first decade where sad but",
+      "upbeat prevails in the mainstream.",
+      "Is this rebellion speaking?"
+    ]
+  },
+  "2000s": {
+    title: "00s — Musical Synergy",
+    lines: [
+      "Looks like a landslide return to both",
+      "high valence and energy, but with lots",
+      "of tracks sitting at the midpoint.",
+      "",
+      "This was the rise of highly produced",
+      "commercial pop and hip-hop from artists",
+      "like Britney Spears, Madonna and Eminem.",
+      "",
+      "The mix of emotions reflect this era's",
+      "digital transition and globalisation,",
+      "including Enrique Iglesias' 'Hero'."
+    ]
+  },
+  "2010s": {
+    title: "10s — Melancholic Headbangers",
+    lines: [
+      "Low valence and high energy seems to",
+      "be popular again, with pop and hip-hop",
+      "still in the lead.",
+      "",
+      "This is the era where music streaming",
+      "took over — the era Gen Z grew up on.",
+      "It's pretty sad, right?",
+      "",
+      "This emotional distance surely reflects",
+      "the anxiety-riddled effects of social",
+      "media, hyperconnectivity and the economy."
+    ]
+  },
+  "2020s": {
+    title: "20s — It's Doomsday... Let's Dance!",
+    lines: [
+      "A more present day look into the 2020s",
+      "reveals that low valence dominance",
+      "prevailed.",
+      "",
+      "Yet again pop and hip-hop leads.",
+      "However energy seems to diminish.",
+      "",
+      "This must be the introspection of the",
+      "infamous pandemic era — the unpredictability",
+      "of what was to come for the world meant",
+      "more mellow sadness persisted."
+    ]
+  }
+};
+
+// clickable decade title regions on scatter page
+let decadeTitleRegions = [];
+
 function preload() {
   dataset = loadTable("1960_2025.csv", "header");
 }
@@ -18,7 +151,7 @@ function preload() {
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
   canvas.parent(document.querySelector("main"));
-  noLoop();
+  frameRate(60);
 }
 
 function windowResized() {
@@ -40,6 +173,8 @@ function draw() {
     drawNavButton();
   } else if (currentPage === "scatter") {
     drawScatterPage();
+    animatePanel();
+    if (panelX !== null) drawSidePanel();
   }
 }
 // Russell's Circumplex Model happiness score
@@ -469,7 +604,8 @@ function drawTooltipStave() {
 // SCATTER GRAPHS
 function drawScatterPage() {
   let decadeData = buildDecadeSongs();
-  scatterDots    = []; // clear scatter dots each frame
+  scatterDots         = []; // clear scatter dots each frame
+  decadeTitleRegions  = []; // clear clickable title regions each frame
 
   // back button
   fill(255);
@@ -554,13 +690,33 @@ function drawScatterPlot(px, py, pw, ph, label, songs) {
   drawingContext.shadowColor = "rgba(0,0,0,0)";
 
   // decade title
+  // clickable, turns purple on hover
+  let titleHov = mouseX > plotX && mouseX < plotX + plotW &&
+                 mouseY > plotY - 16 && mouseY < plotY;
+  let isOpen   = panelOpen && panelDecade === label;
+
   noStroke();
-  fill(25);
+  fill((titleHov || isOpen) ? color(100, 80, 180) : 25);
   textFont("Georgia, serif");
   textSize(10);
   textStyle(BOLD);
   textAlign(LEFT, BOTTOM);
   text(label, plotX, plotY - 3);
+
+  // underline when hovered or panel open for this decade
+  if (titleHov || isOpen) {
+    let tw = textWidth(label);
+    stroke(100, 80, 180);
+    strokeWeight(0.8);
+    line(plotX, plotY - 2, plotX + tw, plotY - 2);
+  }
+
+  // store clickable region for mousePressed
+  decadeTitleRegions.push({
+    label,
+    x: plotX, y: plotY - 16,
+    w: plotW, h: 16
+  });
 
   // quadrant crosshair
   // valence = 50, 
@@ -756,6 +912,103 @@ function drawTooltipScatter() {
   }
 }
 
+// side panel
+// slides in from the right when a decade title is clicked
+function animatePanel() {
+  if (panelTarget === null) return;
+
+  // lerp smoothly toward target position
+  // smooth movement
+  panelX = lerp(panelX, panelTarget, 0.12);
+
+  // snap when close enough and stop looping
+  if (abs(panelX - panelTarget) < 0.5) {
+    panelX = panelTarget;
+    if (!panelOpen) {
+      panelX      = null;
+      panelTarget = null;
+    }
+    noLoop();
+  }
+}
+
+function openPanel(label) {
+  panelOpen   = true;
+  panelDecade = label;
+  panelX      = panelX !== null ? panelX : width; // start off-screen right
+  panelTarget = width - panelW;
+  loop(); // start animation loop
+}
+
+function closePanel() {
+  panelOpen   = false;
+  panelDecade = null;
+  panelTarget = width; // slide back off screen
+}
+
+function drawSidePanel() {
+  let info = decadeDescriptions[panelDecade];
+  if (!info) return;
+
+  let pad = 22;
+  let cx  = panelX + pad;
+
+  // panel shadow
+  drawingContext.shadowOffsetX = -4;
+  drawingContext.shadowOffsetY = 0;
+  drawingContext.shadowBlur    = 20;
+  drawingContext.shadowColor   = "rgba(0,0,0,0.2)";
+
+  // panel background
+  fill(252, 250, 245);
+  noStroke();
+  rect(panelX, 0, panelW, height);
+
+  drawingContext.shadowBlur  = 0;
+  drawingContext.shadowColor = "rgba(0,0,0,0)";
+
+// close hint at the very top
+noStroke();
+fill(160);
+textFont("Georgia, serif");
+textSize(9);
+textStyle(ITALIC);
+textAlign(RIGHT, TOP);
+text("click " + panelDecade + " again to close", panelX + panelW - pad, 10);
+
+// decade heading below it
+fill(30);
+textSize(18);
+textStyle(ITALIC);
+textAlign(LEFT, TOP);
+text(info.title, cx, 36);
+
+// divider line
+stroke(220);
+strokeWeight(0.8);
+line(cx, 62, panelX + panelW - pad, 62);
+
+// descriptive text
+noStroke();
+fill(60);
+textFont("Georgia, serif");
+textSize(9);
+textStyle(NORMAL);
+textAlign(LEFT, TOP);
+
+let lineY = 72;
+  let lineH = 15;
+
+  for (let i = 0; i < info.lines.length; i++) {
+    if (info.lines[i] === "") {
+      lineY += 6; // blank line = small gap
+    } else {
+      text(info.lines[i], cx, lineY);
+      lineY += lineH;
+    }
+  }
+}
+
 // navigation
 
 function mousePressed() {
@@ -771,7 +1024,24 @@ function mousePressed() {
     if (mouseX > navBack.x && mouseX < navBack.x + navBack.w &&
         mouseY > navBack.y && mouseY < navBack.y + navBack.h) {
       currentPage = "stave";
+      closePanel();
       redraw();
+      return;
+    }
+
+    // click decade title
+    // open or close side panel
+    for (let i = 0; i < decadeTitleRegions.length; i++) {
+      let r = decadeTitleRegions[i];
+      if (mouseX > r.x && mouseX < r.x + r.w &&
+          mouseY > r.y && mouseY < r.y + r.h) {
+        if (panelOpen && panelDecade === r.label) {
+          closePanel();
+        } else {
+          openPanel(r.label);
+        }
+        return;
+      }
     }
   }
 }
