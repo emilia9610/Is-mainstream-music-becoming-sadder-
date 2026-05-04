@@ -10,6 +10,9 @@ PROJECT SUMMARY
 This project explores and analyses patterns in emotions within mainstream music from the 1960s to the present day, in order to denote whether or not music has progressively become more negative.
 
 GROUP DESCRIPTION
+2 members
+communication via Instagram due to flexibility
+the workload was evenly distributed, and all decisions were mutually agreed upon.
 
 Amina - Copywriting, Design 
 
@@ -31,6 +34,10 @@ http://www.mediatraffic.de/albums.htm
   http://www.mediatraffic.de/albums.htm
 - music charts archive: world's music charts
 http://www.mediatraffic.de/albums.htm
+
+limitations:
+- no single unified global chart existed before 2020
+- songs missing audio feature data default to neutral in the formula, which may skew results
 
 Using Russell's (1980) Circumplex Model of Affect as the theoretical framework
 https://psu.pb.unizin.org/psych425/chapter/circumplex-models/
