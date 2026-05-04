@@ -165,7 +165,7 @@ function mouseMoved() {
 }
 
 function draw() {
-  background(245, 240, 230); // soft cream background
+  background(255, 252, 235); // soft cream background
 
   if (currentPage === "stave") {
     drawTitle();
@@ -317,12 +317,12 @@ function drawNavButton() {
   navScatter.x = width - navScatter.w - 30;
   navScatter.y = height - navScatter.h - 20;
 
-  fill(255);
-  stroke(0);
+  fill(30, 60, 120);
+  stroke(30, 60, 120);
   strokeWeight(1);
   rect(navScatter.x, navScatter.y, navScatter.w, navScatter.h, 14);
 
-  fill(0);
+  fill(255);
   textFont("Georgia, serif");
   textSize(15);
   textStyle(NORMAL);
@@ -376,7 +376,7 @@ function drawLegend(x, y, paperW) {
 
   noStroke();
   textFont("Georgia, serif");
-  textSize(8);
+  textSize(12);
   textStyle(NORMAL);
   textAlign(LEFT, CENTER);
 
@@ -556,7 +556,7 @@ function drawTooltipStave() {
       noStroke();
       fill(20);
       textFont("Georgia, serif");
-      textSize(8.5);
+      textSize(11);
       textStyle(BOLD);
       textAlign(LEFT, TOP);
       text(d.title, tx + padding, ty + padding);
@@ -564,37 +564,37 @@ function drawTooltipStave() {
       // artist
       textStyle(ITALIC);
       fill(100);
-      textSize(7.5);
+      textSize(10);
       text(d.artist, tx + padding, ty + padding + 13);
 
       // combined score
       let isHappy = d.score >= 50;
       textStyle(NORMAL);
       fill(isHappy ? color(55, 130, 70) : color(175, 45, 45));
-      textSize(7.5);
+      textSize(10);
       text("score: " + d.score + "  (" + (isHappy ? "happier ▲" : "sadder ▼") + ")",
-           tx + padding, ty + padding + 27);
+           tx + padding, ty + padding + 30);
 
       // feature breakdown
       fill(140);
-      textSize(7);
+      textSize(9);
       text("val: " + d.val + "   energy: " + d.nrgy + "   dance: " + d.dnce + "   bpm: " + d.bpm,
-           tx + padding, ty + padding + 42);
+           tx + padding, ty + padding + 48);
 
       // acousticness
-      text("acoustic: " + d.acou, tx + padding, ty + padding + 54);
+      text("acoustic: " + d.acou, tx + padding, ty + padding + 62);
 
       // key — green if major, red if minor
       let keyCol = d.key && d.key.toLowerCase().includes("minor")
                    ? color(175, 45, 45) : color(55, 130, 70);
       fill(keyCol);
-      text("key: " + (d.key || "unknown"), tx + padding, ty + padding + 66);
+      text("key: " + (d.key || "unknown"), tx + padding, ty + padding + 76);
 
       // model credit
       fill(190);
-      textSize(6);
+      textSize(8);
       textStyle(ITALIC);
-      text("Russell's Circumplex Model (1980)", tx + padding, ty + padding + 80);
+      text("Russell's Circumplex Model (1980)", tx + padding, ty + padding + 100);
 
       break;
     }
@@ -608,12 +608,12 @@ function drawScatterPage() {
   decadeTitleRegions  = []; // clear clickable title regions each frame
 
   // back button
-  fill(255);
-  stroke(0);
+  fill(30, 60, 120);
+  stroke(30, 60, 120);
   strokeWeight(1);
   rect(navBack.x, navBack.y, navBack.w, navBack.h, 14);
 
-  fill(0);
+  fill(255);
   textFont("Georgia, serif");
   textSize(15);
   textStyle(NORMAL);
@@ -634,7 +634,7 @@ function drawScatterPage() {
 
   noStroke();
   textFont("Georgia, serif");
-  textSize(7.5);
+  textSize(12);
   textStyle(NORMAL);
   textAlign(LEFT, CENTER);
 
@@ -836,8 +836,8 @@ function drawTooltipScatter() {
   for (let i = 0; i < scatterDots.length; i++) {
     let d = scatterDots[i];
     if (dist(mouseX, mouseY, d.x, d.y) < d.dotSize + 3) {
-      let tooltipW = 190;
-      let tooltipH = 108;
+      let tooltipW = 220;
+      let tooltipH = 145;
       let padding  = 8;
 
       let tx = d.x + 14;
@@ -873,39 +873,39 @@ function drawTooltipScatter() {
       textStyle(ITALIC);
       fill(100);
       textSize(7.5);
-      text(d.artist, tx + padding, ty + padding + 13);
+      text(d.artist, tx + padding, ty + padding + 18);
 
       // mood label
       // coloured by quadrant
       textStyle(NORMAL);
       fill(getMoodColor(d.val, d.nrgy));
       textSize(7.5);
-      text("mood: " + d.mood, tx + padding, ty + padding + 27);
+      text("mood: " + d.mood, tx + padding, ty + padding + 35);
 
       // all columns
       fill(140);
       textSize(7);
       text("val: " + d.val + "   energy: " + d.nrgy + "   dance: " + d.dnce,
-           tx + padding, ty + padding + 42);
+           tx + padding, ty + padding + 52);
       text("bpm: " + d.bpm + "   acoustic: " + d.acou,
-           tx + padding, ty + padding + 54);
+           tx + padding, ty + padding + 66);
 
       // key
       let keyCol = d.key && d.key.toLowerCase().includes("minor")
                    ? color(175, 45, 45) : color(55, 130, 70);
       fill(keyCol);
-      text("key: " + (d.key || "unknown"), tx + padding, ty + padding + 66);
+      text("key: " + (d.key || "unknown"), tx + padding, ty + padding + 80);
 
       // score
       let isHappy = d.score >= 50;
       fill(isHappy ? color(55, 130, 70) : color(175, 45, 45));
-      text("Russell score: " + d.score, tx + padding, ty + padding + 78);
+      text("Russell score: " + d.score, tx + padding, ty + padding + 90);
 
       // dot size hint
       fill(180);
       textSize(6);
       textStyle(ITALIC);
-      text("dot size = danceability", tx + padding, ty + padding + 92);
+      text("dot size = danceability", tx + padding, ty + padding + 108);
 
       break;
     }
@@ -960,7 +960,7 @@ function drawSidePanel() {
   drawingContext.shadowColor   = "rgba(0,0,0,0.2)";
 
   // panel background
-  fill(252, 250, 245);
+  fill(30 , 60, 120);
   noStroke();
   rect(panelX, 0, panelW, height);
 
@@ -969,7 +969,7 @@ function drawSidePanel() {
 
 // close hint at the very top
 noStroke();
-fill(160);
+fill(180, 210, 255);
 textFont("Georgia, serif");
 textSize(9);
 textStyle(ITALIC);
@@ -977,22 +977,21 @@ textAlign(RIGHT, TOP);
 text("click " + panelDecade + " again to close", panelX + panelW - pad, 10);
 
 // decade heading below it
-fill(30);
-textSize(18);
+fill(220, 235, 255);textSize(18);
 textStyle(ITALIC);
 textAlign(LEFT, TOP);
 text(info.title, cx, 36);
 
 // divider line
-stroke(220);
+stroke(80, 110, 180);
 strokeWeight(0.8);
 line(cx, 62, panelX + panelW - pad, 62);
 
 // descriptive text
 noStroke();
-fill(60);
+fill(220, 235, 255);
 textFont("Georgia, serif");
-textSize(9);
+textSize(15);
 textStyle(NORMAL);
 textAlign(LEFT, TOP);
 
