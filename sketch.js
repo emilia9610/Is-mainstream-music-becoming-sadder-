@@ -1,8 +1,9 @@
 let dataset;
-let dots = []; //stores eacg dot's position and song information for hover detection
+let dots = []; //stores each dot's position and song information for hover detection
 
 function preload() {
-dataset = loadTable("top10s2.csv", "header");}
+  dataset = loadTable("1960_2025.csv", "header");
+}
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -11,6 +12,7 @@ function setup() {
 }
 
 function windowResized() {
+  // if the browser window changes size, resize the canvas to match
   resizeCanvas(windowWidth, windowHeight);
   redraw();
 }
@@ -70,28 +72,49 @@ function drawA4Paper() {
   drawingContext.shadowBlur    = 0;
   drawingContext.shadowColor   = "rgba(0, 0, 0, 0)";
 
+  drawLegend(x, y, paperW);
   drawStaves(x, y, paperW, paperH);
   drawDots(x, y, paperW, paperH);
 }
 
+// draws a small legend explaining green = happy, red = sad
+function drawLegend(x, y, paperW) {
+  let lineX = x + (paperW - paperW * 0.85) / 2;
+
+  noStroke();
+  textFont("Georgia, serif");
+  textSize(8);
+  textStyle(NORMAL);
+  textAlign(LEFT, CENTER);
+
+  // green upturned symbol
+  fill(60, 140, 80);
+  text("▲ valence > 50 (happier song)", lineX, y + 78);
+
+  // red downturned symbol
+  fill(180, 50, 50);
+  text("▼ valence < 50 (sadder song)", lineX + 160, y + 78);
+}
+
 function drawStaves(x, y, paperW, paperH) {
-  let topMargin = 120;
-  let bottomMargin = 80;
+  let topMargin = 110;
+  let bottomMargin = 60;
   let staveAreaHeight = paperH - topMargin - bottomMargin;
 
-  let numStaves = 10; // one per year (2010-2019)
+  // 7 staves, one per decade: 60s, 70s, 80s, 90s, 00s, 10s, 20s
+  let numStaves = 7;
   let staveSpacing = staveAreaHeight / numStaves;
 
-  let lineSpacing = 5;     // space between the 5 lines of each stave
+  // each stave has 5 lines spaced 6px apart
+  let lineSpacing = 6;
   let lineLength = paperW * 0.85;
   let lineX = x + (paperW - lineLength) / 2;
 
   stroke(0);
-  strokeWeight(1);
+  strokeWeight(0.8);
 
   for (let i = 0; i < numStaves; i++) {
     let staveY = y + topMargin + i * staveSpacing;
-
     for (let l = 0; l < 5; l++) {
       let yPos = staveY + l * lineSpacing;
       line(lineX, yPos, lineX + lineLength, yPos);
@@ -99,106 +122,164 @@ function drawStaves(x, y, paperW, paperH) {
   }
 }
 
-// (2010-2019) with up to 10 valence values each
-function buildYearSongs() {
-  let years = [];
-  for (let yr = 2010; yr <= 2019; yr++) {
-    years.push({ year: yr, songs: [] });
-  }
+// rows in the loaded CSV (1960s–2010s), up to 10 songs per decade
+function buildDecadeSongs() {
+  let decades = [
+    { label: "1960s", start: 1960, end: 1969, songs: [] },
+    { label: "1970s", start: 1970, end: 1979, songs: [] },
+    { label: "1980s", start: 1980, end: 1989, songs: [] },
+    { label: "1990s", start: 1990, end: 1999, songs: [] },
+    { label: "2000s", start: 2000, end: 2009, songs: [] },
+    { label: "2010s", start: 2010, end: 2019, songs: [] },
+    { label: "2020s", start: 2020, end: 2029, songs: [] },
+  ];
 
-  // rows in the loaded CSV
   let rows = dataset.getRowCount();
-  for (let r = 0; r < rows; r++) {
-    let rowYear = dataset.getNum(r, "year");
-    let val     = dataset.getNum(r, "val");
-    let title   = dataset.getString(r, "title");
-    let artist  = dataset.getString(r, "artist");
+  let currentChartDecade = -1;
 
-    // search the years for the matching year using yearIndex
-    for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
-      if (years[yearIndex].year === rowYear) {
-        // 10 songs per year
-        if (years[yearIndex].songs.length < 10) {
-          years[yearIndex].songs.push({ val, title, artist });
+  for (let r = 0; r < rows; r++) {
+    let title  = dataset.getString(r, 1); // title column
+    let artist = dataset.getString(r, 2); // artist column
+    let yr     = dataset.getString(r, 4); // year column
+    let valStr = dataset.getString(r, 11); // val column
+    
+    // skip rows with missing data
+    if (!title || !valStr || valStr.trim() === "" || !yr || yr.trim() === "") continue;
+
+    let rowYear = int(yr);
+    let val     = int(valStr);
+
+    if (rowYear < 1950 || rowYear > 2030 || isNaN(val)) continue;
+
+    // use chart decade from header row, fall back to release year decade
+    let groupYear = (currentChartDecade > 0) ? currentChartDecade : rowYear;
+    let decade    = floor(groupYear / 10) * 10;
+
+    // only include 1960–2029
+    if (decade < 1960 || decade > 2020) continue;
+
+    for (let d = 0; d < decades.length; d++) {
+      if (decade === decades[d].start) {
+        if (decades[d].songs.length < 10) {
+          decades[d].songs.push({ val, title, artist });
         }
         break; // stop searching once found
       }
     }
   }
 
-  return years;
+  return decades;
 }
 
 function drawDots(x, y, paperW, paperH) {
-  // per-year from the loaded CSV
-  let yearData = buildYearSongs();
+  let decadeData = buildDecadeSongs();
 
-  let topMargin = 120;
-  let bottomMargin = 80;
+  let topMargin = 110;
+  let bottomMargin = 60;
   let staveAreaHeight = paperH - topMargin - bottomMargin;
 
-  let numStaves = 10;
+  let numStaves = 7;
   let staveSpacing = staveAreaHeight / numStaves;
 
-  let lineSpacing = 5;
+  let lineSpacing = 6;
   let lineLength = paperW * 0.85;
   let lineX = x + (paperW - lineLength) / 2;
-// clear dots array
+
+  // clear dots array
   dots = [];
 
-  for (let i = 0; i < yearData.length; i++) {
-    let year  = yearData[i].year;
-    let songs = yearData[i].songs;
+  for (let i = 0; i < decadeData.length; i++) {
+    let label = decadeData[i].label;
+    let songs = decadeData[i].songs;
 
+    // top and bottom of this stave's 5 lines
     let staveTop = y + topMargin + i * staveSpacing;
     let staveBot = staveTop + 4 * lineSpacing;
 
-    // iterate songs using songIndex and center segment position
     for (let songIndex = 0; songIndex < songs.length; songIndex++) {
       // center each dot across the stave
       let segmentCenter = (songIndex + 0.5) / songs.length;
-      let dotX = lineX + lineLength * segmentCenter;
-      // map valence 0-100 to vertical position between bottom and top stave lines
-      let dotY = map(songs[songIndex].val, 0, 100, staveBot, staveTop);
+      let noteX = lineX + lineLength * segmentCenter;
 
-      noStroke();
-      fill(0);
-      circle(dotX, dotY, 6);
-      // save dot information for hover detection
+      // map valence 0–100 to vertical position on stave
+      // high valence = near top, low valence = near bottom
+      let noteY = map(songs[songIndex].val, 0, 100, staveBot, staveTop);
+
+      // green if val > 50 (happy), red if val < 50 (sad)
+      let isHappy = songs[songIndex].val >= 50;
+      let noteColor = isHappy ? color(55, 130, 70) : color(175, 45, 45);
+
+      // draw the dots (notehead + stem)
+      drawDot(noteX, noteY, isHappy, noteColor, lineSpacing);
+
+      // save position and song info for hover tooltip
       dots.push({
-        x: dotX,
-        y: dotY,
+        x: noteX,
+        y: noteY,
         title: songs[songIndex].title,
         artist: songs[songIndex].artist,
         val: songs[songIndex].val
       });
     }
 
-    // year
-    textFont("Georgia, serif");
-    textSize(7);
-    textStyle(NORMAL);
-    textAlign(RIGHT, CENTER);
+    // decade label on the left of each stave
+    noStroke();
     fill(0);
-    text(year, lineX - 6, staveTop + 2 * lineSpacing);
+    textFont("Georgia, serif");
+    textSize(8);
+    textStyle(BOLD);
+    textAlign(RIGHT, CENTER);
+    text(label, lineX - 8, staveTop + 2 * lineSpacing);
   }
 
   drawTooltip();
 }
-// if mouse is within 8px of the dot centre
+
+// draws a single dot (filled oval notehead + stem)
+// isHappy = true, stem goes up (upturned)
+// isHappy = false, stem goes down (downturned)
+function drawDot(nx, ny, isHappy, noteColor, lineSpacing) {
+  let stemLength = lineSpacing * 3.5; // length of the stem
+  let headW      = lineSpacing * 1.3; // notehead width
+  let headH      = lineSpacing * 0.9; // notehead height
+
+  // draw notehead, filled oval, slightly tilted
+  push();
+  translate(nx, ny);
+  rotate(-PI / 10); // slight tilt like a real notehead
+  noStroke();
+  fill(noteColor);
+  ellipse(0, 0, headW, headH);
+  pop();
+
+  // draw stem
+  stroke(noteColor);
+  strokeWeight(1.5);
+  if (isHappy) {
+    // upturned stem — goes up from right side of notehead
+    line(nx + headW * 0.4, ny - headH * 0.2, nx + headW * 0.4, ny - stemLength);
+  } else {
+    // downturned stem — goes down from left side of notehead
+    line(nx - headW * 0.4, ny + headH * 0.2, nx - headW * 0.4, ny + stemLength);
+  }
+
+  noStroke();
+}
+
+// shows tooltip when mouse is within 8px of a dot
 function drawTooltip() {
   for (let i = 0; i < dots.length; i++) {
     let d = dots[i];
 
-    if (dist(mouseX, mouseY, d.x, d.y) < 8) {
-      let tooltipW = 160;
-      let tooltipH = 44;
+    if (dist(mouseX, mouseY, d.x, d.y) < 10) {
+      let tooltipW = 165;
+      let tooltipH = 52;
       let padding  = 8;
 
-      // keep tool tip inside the canvas
-      let tx = d.x + 10;
+      // position tooltip, flip if too close to edge
+      let tx = d.x + 12;
       let ty = d.y - tooltipH - 6;
-      if (tx + tooltipW > width) tx = d.x - tooltipW - 10;
+      if (tx + tooltipW > width) tx = d.x - tooltipW - 12;
       if (ty < 0)                ty = d.y + 10;
 
       // pop up shadow
@@ -234,9 +315,13 @@ function drawTooltip() {
 
       // valence score
       textStyle(NORMAL);
-      fill(150);
+      let isHappy = d.val >= 50;
+      fill(isHappy ? color(55, 130, 70) : color(175, 45, 45));
       textSize(7);
-      text("valence: " + d.val, tx + padding, ty + padding + 26);
+      text(
+        "valence: " + d.val + "  (" + (isHappy ? "happier ▲" : "sadder ▼") + ")",
+        tx + padding, ty + padding + 26
+      );
 
       break;
     }
