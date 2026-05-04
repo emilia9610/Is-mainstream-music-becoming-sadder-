@@ -526,8 +526,8 @@ function drawTooltipStave() {
     let d = dots[i];
 
     if (dist(mouseX, mouseY, d.x, d.y) < 10) {
-      let tooltipW = 185;
-      let tooltipH = 105;
+      let tooltipW = 200;
+      let tooltipH = 135;
       let padding  = 8;
 
       // position tooltip, flip if too close to edge
