@@ -89,11 +89,18 @@ function drawLegend(x, y, paperW) {
 
   // green upturned symbol
   fill(60, 140, 80);
-  text("▲ valence > 50 (happier song)", lineX, y + 78);
+  text("▲ score > 50 (happier song)", lineX, y + 78);
 
   // red downturned symbol
   fill(180, 50, 50);
-  text("▼ valence < 50 (sadder song)", lineX + 160, y + 78);
+  text("▼ score < 50 (sadder song)", lineX + 160, y + 78);
+
+  // brief note about the formula
+  fill(140);
+  textSize(7.5);
+  textStyle(ITALIC);
+  text("score based on Russell's Circumplex Model (1980)·higher on stave = happier", lineX, y + 92);
+  textStyle(NORMAL);
 }
 
 function drawStaves(x, y, paperW, paperH) {
@@ -122,6 +129,36 @@ function drawStaves(x, y, paperW, paperH) {
   }
 }
 
+// Russell's Circumplex Model happiness score
+// combines 6 audio features weighted by their relevance to emotional valence:
+//   val   × 0.40  — spotify's direct happiness measure (most reliable)
+//   dnce  × 0.20  — danceability: upbeat songs = happier
+//   nrgy  × 0.10  — energy: maps to arousal axis of Russell's model
+//   bpm   × 0.05  — tempo: faster = happier, normalised 60–200  0–100
+//   acous × 0.15  — acousticness inverted: acoustic = more emotionally raw/sad
+//   key   × 0.10  — major key = 100 (happy), minor key = 0 (sad)
+// weights sum to 1.0 = output always 0–100
+function calcScore(val, nrgy, dnce, acous, keyStr, bpm) {
+  // major = happy (100), minor = sad (0), unknown = neutral (50)
+  let keyScore = 50;
+  if (keyStr && keyStr.trim() !== "") {
+    keyScore = keyStr.toLowerCase().includes("minor") ? 0 : 100;
+  }
+
+  // invert acousticness — high acoustic = sadder, so we flip it
+  let acoustInverted = 100 - acous;
+
+  // normalise BPM: 60 = slowest/saddest, 200 = fastest/happiest
+  let normBPM = constrain(map(bpm, 60, 200, 0, 100), 0, 100);
+
+  return (val            * 0.40)
+       + (dnce           * 0.20)
+       + (nrgy           * 0.10)
+       + (normBPM        * 0.05)
+       + (acoustInverted * 0.15)
+       + (keyScore       * 0.10);
+}
+
 // rows in the loaded CSV (1960s–2010s), up to 10 songs per decade
 function buildDecadeSongs() {
   let decades = [
@@ -138,30 +175,52 @@ function buildDecadeSongs() {
   let currentChartDecade = -1;
 
   for (let r = 0; r < rows; r++) {
-    let title  = dataset.getString(r, 1); // title column
-    let artist = dataset.getString(r, 2); // artist column
-    let yr     = dataset.getString(r, 4); // year column
-    let valStr = dataset.getString(r, 11); // val column
-    
+    let title  = dataset.getString(r, 1);  // title
+    let artist = dataset.getString(r, 2);  // artist
+    let yr     = dataset.getString(r, 4);  // year
+    let keyStr = dataset.getString(r, 5);  // key
+    let bpmStr = dataset.getString(r, 6);  // bpm
+    let nrgStr = dataset.getString(r, 7);  // energy
+    let dncStr = dataset.getString(r, 8);  // danceability
+    let valStr = dataset.getString(r, 11); // valence
+    let acoStr = dataset.getString(r, 13); // acousticness
+
+    // detect decade header rows (e.g. title="1960", year="")
+    if (title && title.match(/^\d{4}$/) && (!yr || yr.trim() === "")) {
+      currentChartDecade = int(title);
+      continue;
+    }
+
     // skip rows with missing data
     if (!title || !valStr || valStr.trim() === "" || !yr || yr.trim() === "") continue;
 
     let rowYear = int(yr);
     let val     = int(valStr);
-
     if (rowYear < 1950 || rowYear > 2030 || isNaN(val)) continue;
 
-    // use chart decade from header row, fall back to release year decade
+    // default missing features to neutral 50 so the formula still works
+    let nrgy = (nrgStr && nrgStr.trim() !== "") ? int(nrgStr) : 50;
+    let dnce = (dncStr && dncStr.trim() !== "") ? int(dncStr) : 50;
+    let acou = (acoStr && acoStr.trim() !== "") ? int(acoStr) : 50;
+    let bpm  = (bpmStr && bpmStr.trim() !== "") ? float(bpmStr) : 120;
+
+    // calculate happiness score using Russell's model
+    let score = calcScore(val, nrgy, dnce, acou, keyStr, bpm);
+
     let groupYear = (currentChartDecade > 0) ? currentChartDecade : rowYear;
     let decade    = floor(groupYear / 10) * 10;
 
-    // only include 1960–2029
     if (decade < 1960 || decade > 2020) continue;
 
     for (let d = 0; d < decades.length; d++) {
       if (decade === decades[d].start) {
         if (decades[d].songs.length < 10) {
-          decades[d].songs.push({ val, title, artist });
+          // store score + all individual values for the tooltip breakdown
+          decades[d].songs.push({
+            score, val, nrgy, dnce, acou,
+            bpm: round(bpm), key: keyStr,
+            title, artist
+          });
         }
         break; // stop searching once found
       }
@@ -197,28 +256,31 @@ function drawDots(x, y, paperW, paperH) {
     let staveBot = staveTop + 4 * lineSpacing;
 
     for (let songIndex = 0; songIndex < songs.length; songIndex++) {
+      let s = songs[songIndex];
+
       // center each dot across the stave
       let segmentCenter = (songIndex + 0.5) / songs.length;
       let noteX = lineX + lineLength * segmentCenter;
 
-      // map valence 0–100 to vertical position on stave
-      // high valence = near top, low valence = near bottom
-      let noteY = map(songs[songIndex].val, 0, 100, staveBot, staveTop);
+      // map happiness SCORE (not raw val) to vertical position on stave
+      // high score = near top (happier), low score = near bottom (sadder)
+      let noteY = map(s.score, 0, 100, staveBot, staveTop);
 
-      // green if val > 50 (happy), red if val < 50 (sad)
-      let isHappy = songs[songIndex].val >= 50;
+      // green if score >= 50 (happier), red if below (sadder)
+      let isHappy   = s.score >= 50;
       let noteColor = isHappy ? color(55, 130, 70) : color(175, 45, 45);
 
-      // draw the dots (notehead + stem)
+      // draw the dot (notehead + stem)
       drawDot(noteX, noteY, isHappy, noteColor, lineSpacing);
 
       // save position and song info for hover tooltip
       dots.push({
-        x: noteX,
-        y: noteY,
-        title: songs[songIndex].title,
-        artist: songs[songIndex].artist,
-        val: songs[songIndex].val
+        x: noteX, y: noteY,
+        title: s.title, artist: s.artist,
+        score: round(s.score),
+        val: s.val, nrgy: s.nrgy,
+        dnce: s.dnce, acou: s.acou,
+        bpm: s.bpm, key: s.key
       });
     }
 
@@ -266,14 +328,14 @@ function drawDot(nx, ny, isHappy, noteColor, lineSpacing) {
   noStroke();
 }
 
-// shows tooltip when mouse is within 8px of a dot
+// shows tooltip when mouse is within 10px of a dot
 function drawTooltip() {
   for (let i = 0; i < dots.length; i++) {
     let d = dots[i];
 
     if (dist(mouseX, mouseY, d.x, d.y) < 10) {
-      let tooltipW = 165;
-      let tooltipH = 52;
+      let tooltipW = 185;
+      let tooltipH = 105;
       let padding  = 8;
 
       // position tooltip, flip if too close to edge
@@ -311,17 +373,36 @@ function drawTooltip() {
       textStyle(ITALIC);
       fill(100);
       textSize(7.5);
-      text(d.artist, tx + padding, ty + padding + 14);
+      text(d.artist, tx + padding, ty + padding + 13);
 
-      // valence score
+      // combined score
+      let isHappy = d.score >= 50;
       textStyle(NORMAL);
-      let isHappy = d.val >= 50;
       fill(isHappy ? color(55, 130, 70) : color(175, 45, 45));
+      textSize(7.5);
+      text("score: " + d.score + "  (" + (isHappy ? "happier ▲" : "sadder ▼") + ")",
+           tx + padding, ty + padding + 27);
+
+      // feature breakdown
+      fill(140);
       textSize(7);
-      text(
-        "valence: " + d.val + "  (" + (isHappy ? "happier ▲" : "sadder ▼") + ")",
-        tx + padding, ty + padding + 26
-      );
+      text("val: " + d.val + "   energy: " + d.nrgy + "   dance: " + d.dnce + "   bpm: " + d.bpm,
+           tx + padding, ty + padding + 42);
+
+      // acousticness
+      text("acoustic: " + d.acou, tx + padding, ty + padding + 54);
+
+      // key — green if major, red if minor
+      let keyCol = d.key && d.key.toLowerCase().includes("minor")
+                   ? color(175, 45, 45) : color(55, 130, 70);
+      fill(keyCol);
+      text("key: " + (d.key || "unknown"), tx + padding, ty + padding + 66);
+
+      // model credit
+      fill(190);
+      textSize(6);
+      textStyle(ITALIC);
+      text("Russell's Circumplex Model (1980)", tx + padding, ty + padding + 80);
 
       break;
     }
