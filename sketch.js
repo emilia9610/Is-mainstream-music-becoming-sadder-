@@ -165,7 +165,7 @@ function mouseMoved() {
 }
 
 function draw() {
-  background(65, 151, 255); // blue background
+  background(155, 190, 237); // pastel blue background
 
   if (currentPage === "stave") {
     drawTitle();
