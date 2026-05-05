@@ -165,7 +165,7 @@ function mouseMoved() {
 }
 
 function draw() {
-  background(255, 252, 235); // soft cream background
+  background(65, 151, 255); // blue background
 
   if (currentPage === "stave") {
     drawTitle();
@@ -373,11 +373,12 @@ drawingContext.shadowBlur    = 15;
 drawingContext.shadowColor   = "rgba(0, 0, 0, 0.15)";
 
 // left box
-fill(255);
+fill(253, 253, 150); // soft pastel yellow
 noStroke();
 rect(x - 215, y + 10, 200, 210, 8);
 
 // right box
+fill(253, 253, 150) // soft pastel yelloe
 rect(x + paperW + 15, y + 10, 200, 230, 8);
 
 // reset shadow
