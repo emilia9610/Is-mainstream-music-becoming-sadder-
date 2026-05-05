@@ -19,6 +19,7 @@ Amina - Copywriting, Design
 Emilia - Coding, Dataset, Part Design
 
 REFERENCES
+
 emilia's notion: for references, progress
 https://www.notion.so/MA2806-Data-Journalism-Visualisation-31744feed8bf8042a010ea51079da059
 
@@ -42,8 +43,10 @@ limitations:
 Using Russell's (1980) Circumplex Model of Affect as the theoretical framework
 https://psu.pb.unizin.org/psych425/chapter/circumplex-models/
 
+- keeping the design as universally undestandable as possible while being aesthetically unique
+- e.g. using less musically specific music symbols and terminology so the data can be legible to those who don't know music theory
 
 
-amina reference and design plan doc:
+amina's reference and design plan doc:
 https://docs.google.com/document/d/e/2PACX-1vTS5ag65SitGAkjk-CDMwa_cqoJgm61fhjPjgrfU0BgFL9LMLFfWjalIuAzBEvDF0jMQZpTM30wnKLt/pub  
 
