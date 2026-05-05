@@ -373,7 +373,7 @@ drawingContext.shadowBlur    = 15;
 drawingContext.shadowColor   = "rgba(0, 0, 0, 0.15)";
 
 // left box
-fill(248, 2541, 174); // soft pastel yellow
+fill(248, 241, 174); // soft pastel yellow
 noStroke();
 rect(x - 215, y + 10, 200, 210, 8);
 
